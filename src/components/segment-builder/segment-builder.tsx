@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Save, Users, Sparkles, ArrowLeft } from 'lucide-react';
+import { Plus, Save, Sparkles, ArrowLeft } from 'lucide-react';
 import type { ConditionGroup, LogicOperator, Condition, Segment } from '../../types/segment-builder-types';
 import { ConditionGroupCard } from './condition-group';
 import { SavedSegmentsPanel } from './saved-segments-panel';
@@ -174,59 +174,56 @@ export function SegmentBuilder({ initialGroups, initialGroupLogic, initialName, 
         )}
       </div>
 
-      {/* Audience estimate */}
-      <div className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200/50 rounded-xl px-5 py-4">
-        <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center">
-          <Users size={20} className="text-violet-600" />
+      {/* Two-column layout: conditions (left) + preview (right on lg+) */}
+      <div className="flex gap-5 items-start">
+        {/* Left column — condition builder */}
+        <div className="flex-1 min-w-0 space-y-3">
+          {/* Condition groups */}
+          {groups.map((group, idx) => (
+            <div key={group.id}>
+              {idx > 0 && (
+                <div className="flex items-center gap-3 py-2">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <button
+                    onClick={() => setGroupLogic(groupLogic === 'AND' ? 'OR' : 'AND')}
+                    className={`px-4 py-1 rounded-full text-xs font-bold border transition-colors cursor-pointer ${groupLogicColor}`}
+                  >
+                    {groupLogic}
+                  </button>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+              )}
+              <ConditionGroupCard
+                group={group}
+                onChange={(updated) => handleGroupChange(idx, updated)}
+                onRemove={() => handleGroupRemove(idx)}
+                canRemove={groups.length > 1}
+              />
+            </div>
+          ))}
+
+          {/* Add group */}
+          {groups.length < 4 && (
+            <button
+              onClick={handleAddGroup}
+              className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-500 hover:border-violet-300 hover:text-violet-600 hover:bg-violet-50/30 transition-colors cursor-pointer"
+            >
+              <Plus size={16} />
+              Add condition group
+            </button>
+          )}
         </div>
-        <div>
-          <div className="text-sm text-slate-500">Estimated Audience</div>
-          <div className="text-2xl font-bold text-slate-900">
-            {estimate > 0 ? estimate.toLocaleString() : '—'}
-          </div>
+
+        {/* Right column — sticky preview panel, hidden below lg */}
+        <div className="hidden lg:block w-72 shrink-0 sticky top-6">
+          <SegmentPreviewPanel groups={groups} groupLogic={groupLogic} audienceEstimate={estimate} />
         </div>
-        <div className="ml-auto text-xs text-slate-400">players matching conditions</div>
       </div>
 
-      {/* Condition groups */}
-      <div className="space-y-3">
-        {groups.map((group, idx) => (
-          <div key={group.id}>
-            {idx > 0 && (
-              <div className="flex items-center gap-3 py-2">
-                <div className="h-px flex-1 bg-slate-200" />
-                <button
-                  onClick={() => setGroupLogic(groupLogic === 'AND' ? 'OR' : 'AND')}
-                  className={`px-4 py-1 rounded-full text-xs font-bold border transition-colors cursor-pointer ${groupLogicColor}`}
-                >
-                  {groupLogic}
-                </button>
-                <div className="h-px flex-1 bg-slate-200" />
-              </div>
-            )}
-            <ConditionGroupCard
-              group={group}
-              onChange={(updated) => handleGroupChange(idx, updated)}
-              onRemove={() => handleGroupRemove(idx)}
-              canRemove={groups.length > 1}
-            />
-          </div>
-        ))}
+      {/* Preview below conditions on small screens */}
+      <div className="lg:hidden">
+        <SegmentPreviewPanel groups={groups} groupLogic={groupLogic} audienceEstimate={estimate} />
       </div>
-
-      {/* Add group */}
-      {groups.length < 4 && (
-        <button
-          onClick={handleAddGroup}
-          className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-500 hover:border-violet-300 hover:text-violet-600 hover:bg-violet-50/30 transition-colors cursor-pointer"
-        >
-          <Plus size={16} />
-          Add condition group
-        </button>
-      )}
-
-      {/* Segment preview — natural language summary */}
-      <SegmentPreviewPanel groups={groups} groupLogic={groupLogic} />
 
       {/* Saved segments listing */}
       <SavedSegmentsPanel segments={savedSegments} onLoad={handleLoad} onDelete={handleDelete} />

@@ -1,23 +1,21 @@
-import { Eye } from 'lucide-react';
+import { Eye, Users } from 'lucide-react';
 import type { ConditionGroup, LogicOperator, OperatorType } from '../../types/segment-builder-types';
 import { PROPERTIES, OPERATORS } from '../../data/mock-data';
 
 interface SegmentPreviewPanelProps {
   groups: ConditionGroup[];
   groupLogic: LogicOperator;
+  audienceEstimate: number;
 }
 
-/** Map property key → display label */
 function propLabel(key: string): string {
   return PROPERTIES.find((p) => p.key === key)?.label ?? key;
 }
 
-/** Map property key → category label */
 function propCategory(key: string): string {
   return PROPERTIES.find((p) => p.key === key)?.category ?? 'Unknown';
 }
 
-/** Readable operator text for the preview sentence */
 const OPERATOR_TEXT: Record<OperatorType, string> = {
   equals: 'equals to',
   not_equals: 'not equals to',
@@ -35,12 +33,11 @@ function operatorText(op: OperatorType): string {
   return OPERATOR_TEXT[op] ?? OPERATORS.find((o) => o.value === op)?.label ?? op;
 }
 
-/** Check if there's at least one valid (filled-in) condition across all groups */
 function hasValidConditions(groups: ConditionGroup[]): boolean {
   return groups.some((g) => g.conditions.some((c) => c.property !== ''));
 }
 
-/** Pill-styled badge for property/operator/value tokens */
+/** Compact pill badge for the side panel */
 function Pill({ children, variant = 'default' }: { children: React.ReactNode; variant?: 'default' | 'value' | 'category' }) {
   const styles = {
     default: 'bg-slate-100 text-slate-700 border-slate-200',
@@ -48,68 +45,59 @@ function Pill({ children, variant = 'default' }: { children: React.ReactNode; va
     category: 'bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold',
   };
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded-md text-[13px] border ${styles[variant]}`}>
+    <span className={`inline-flex px-1.5 py-0.5 rounded text-[11px] border ${styles[variant]}`}>
       {children}
     </span>
   );
 }
 
-/** Logic operator divider shown between groups */
 function LogicDivider({ logic }: { logic: LogicOperator }) {
-  const color = logic === 'AND'
-    ? 'text-blue-600 border-blue-200'
-    : 'text-emerald-600 border-emerald-200';
+  const color = logic === 'AND' ? 'text-blue-600' : 'text-emerald-600';
   return (
-    <div className={`flex items-center gap-3 my-2`}>
+    <div className="flex items-center gap-2 my-2">
       <div className="h-px flex-1 border-t border-dashed border-slate-200" />
-      <span className={`text-xs font-bold ${color}`}>{logic}</span>
+      <span className={`text-[10px] font-bold ${color}`}>{logic}</span>
       <div className="h-px flex-1 border-t border-dashed border-slate-200" />
     </div>
   );
 }
 
-/** Renders a single condition group in natural language */
 function GroupPreview({ group }: { group: ConditionGroup }) {
   const validConditions = group.conditions.filter((c) => c.property !== '');
   if (validConditions.length === 0) return null;
 
-  // Group conditions by category for readability
   const category = propCategory(validConditions[0].property);
 
   return (
-    <div className={`${group.negated ? 'pl-4 border-l-[3px] border-orange-400' : ''}`}>
+    <div className={`${group.negated ? 'pl-3 border-l-2 border-orange-400' : ''}`}>
       {group.negated && (
-        <span className="text-xs font-bold text-orange-600 mb-1 block">
-          EXCLUDES players where:
-        </span>
+        <span className="text-[10px] font-bold text-orange-600 mb-1 block">EXCLUDES where:</span>
       )}
       {!group.negated && (
-        <span className="text-sm text-slate-500 mb-2 block">
-          Applies when the data source is <Pill variant="category">{category}</Pill> and the following conditions are met:
-        </span>
+        <p className="text-[11px] text-slate-500 mb-1.5 leading-relaxed">
+          Applies when the source is <Pill variant="category">{category}</Pill> and conditions are met:
+        </p>
       )}
 
-      <div className="space-y-2 mt-2">
+      <div className="space-y-1.5">
         {validConditions.map((cond, ci) => (
-          <div key={cond.id}>
+          <div key={cond.id} className="flex flex-wrap items-center gap-1">
             {ci > 0 && (
-              <span className={`text-xs font-bold mr-2 ${group.logic === 'AND' ? 'text-blue-600' : 'text-emerald-600'}`}>
+              <span className={`text-[10px] font-bold ${group.logic === 'AND' ? 'text-blue-600' : 'text-emerald-600'}`}>
                 {group.logic}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5 flex-wrap">
-              <Pill>{propLabel(cond.property)}</Pill>
-              <Pill>{operatorText(cond.operator as OperatorType)}</Pill>
-              {!['is_null', 'is_not_null'].includes(cond.operator) && cond.value && (
-                <Pill variant="value">{cond.value}</Pill>
-              )}
-              {cond.operator === 'between' && cond.valueTo && (
-                <>
-                  <span className="text-xs text-slate-400">and</span>
-                  <Pill variant="value">{cond.valueTo}</Pill>
-                </>
-              )}
-            </span>
+            <Pill>{propLabel(cond.property)}</Pill>
+            <Pill>{operatorText(cond.operator as OperatorType)}</Pill>
+            {!['is_null', 'is_not_null'].includes(cond.operator) && cond.value && (
+              <Pill variant="value">{cond.value}</Pill>
+            )}
+            {cond.operator === 'between' && cond.valueTo && (
+              <>
+                <span className="text-[10px] text-slate-400">and</span>
+                <Pill variant="value">{cond.valueTo}</Pill>
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -117,27 +105,51 @@ function GroupPreview({ group }: { group: ConditionGroup }) {
   );
 }
 
-export function SegmentPreviewPanel({ groups, groupLogic }: SegmentPreviewPanelProps) {
-  if (!hasValidConditions(groups)) return null;
+export function SegmentPreviewPanel({ groups, groupLogic, audienceEstimate }: SegmentPreviewPanelProps) {
+  const hasConditions = hasValidConditions(groups);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Eye size={16} className="text-slate-500" />
-        <h3 className="text-sm font-bold text-slate-900 italic">Preview</h3>
+    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+        <Eye size={14} className="text-slate-500" />
+        <h3 className="text-xs font-bold text-slate-900 italic">Preview</h3>
       </div>
 
-      <div className="space-y-1">
-        {groups.map((group, gi) => {
-          const hasValid = group.conditions.some((c) => c.property !== '');
-          if (!hasValid) return null;
-          return (
-            <div key={group.id}>
-              {gi > 0 && <LogicDivider logic={groupLogic} />}
-              <GroupPreview group={group} />
+      {/* Audience estimate — compact */}
+      <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-violet-50/50 to-indigo-50/50">
+        <div className="flex items-center gap-2">
+          <Users size={14} className="text-violet-500" />
+          <span className="text-xs text-slate-500">Estimated Audience</span>
+        </div>
+        <div className="text-xl font-bold text-slate-900 mt-0.5">
+          {audienceEstimate > 0 ? audienceEstimate.toLocaleString() : '—'}
+        </div>
+      </div>
+
+      {/* Condition preview */}
+      <div className="px-4 py-4">
+        {hasConditions ? (
+          <div className="space-y-1">
+            {groups.map((group, gi) => {
+              const hasValid = group.conditions.some((c) => c.property !== '');
+              if (!hasValid) return null;
+              return (
+                <div key={group.id}>
+                  {gi > 0 && <LogicDivider logic={groupLogic} />}
+                  <GroupPreview group={group} />
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-6">
+            <div className="text-slate-300 mb-2">
+              <Eye size={24} className="mx-auto" />
             </div>
-          );
-        })}
+            <p className="text-xs text-slate-400">Add conditions on the left to see a preview here</p>
+          </div>
+        )}
       </div>
     </div>
   );
