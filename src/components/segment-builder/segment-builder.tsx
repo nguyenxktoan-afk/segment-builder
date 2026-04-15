@@ -3,6 +3,7 @@ import { Plus, Save, Users, Sparkles, ArrowLeft } from 'lucide-react';
 import type { ConditionGroup, LogicOperator, Condition, Segment } from '../../types/segment-builder-types';
 import { ConditionGroupCard } from './condition-group';
 import { SavedSegmentsPanel } from './saved-segments-panel';
+import { AiSuggestionInput } from './ai-suggestion-input';
 import { useAudienceEstimate } from '../../hooks/use-audience-estimate';
 
 let groupIdCounter = 200;
@@ -106,6 +107,15 @@ export function SegmentBuilder({ initialGroups, initialGroupLogic, initialName, 
     }
   };
 
+  /** Apply AI-generated conditions into the builder */
+  const handleAiApply = (aiGroups: ConditionGroup[], aiLogic: LogicOperator, aiName: string) => {
+    setGroups(aiGroups);
+    setGroupLogic(aiLogic);
+    if (aiName) setSegmentName(aiName);
+    setSaved(false);
+    setEditingId(null);
+  };
+
   const groupLogicColor = groupLogic === 'AND'
     ? 'bg-blue-100 text-blue-700 border-blue-200'
     : 'bg-emerald-100 text-emerald-700 border-emerald-200';
@@ -142,6 +152,9 @@ export function SegmentBuilder({ initialGroups, initialGroupLogic, initialName, 
           </button>
         </div>
       </div>
+
+      {/* AI Suggestion */}
+      <AiSuggestionInput onApply={handleAiApply} />
 
       {/* Segment name input */}
       <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3">
