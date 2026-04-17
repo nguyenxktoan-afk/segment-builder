@@ -132,4 +132,4 @@ export interface Playbook {
 
 /* ── Navigation ── */
 
-export type Phase = 'builder' | 'templates' | 'playbooks';
+export type Phase = 'builder' | 'templates' | 'playbooks' | 'analysis' | 'campaign-stats';

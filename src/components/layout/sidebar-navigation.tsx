@@ -1,10 +1,27 @@
-import { Layers, BookTemplate, Rocket, ChevronRight } from 'lucide-react';
+import { Layers, BookTemplate, Rocket, BarChart3, TrendingUp, ChevronRight } from 'lucide-react';
 import type { Phase } from '../../types/segment-builder-types';
 
-const NAV_ITEMS: { phase: Phase; label: string; icon: React.ReactNode; step: number }[] = [
-  { phase: 'builder', label: 'Segment Builder', icon: <Layers size={20} />, step: 1 },
-  { phase: 'templates', label: 'Template Library', icon: <BookTemplate size={20} />, step: 2 },
-  { phase: 'playbooks', label: 'Playbook Automation', icon: <Rocket size={20} />, step: 3 },
+interface NavGroup {
+  label: string;
+  items: { phase: Phase; label: string; icon: React.ReactNode }[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: 'LiveOps Segments',
+    items: [
+      { phase: 'builder', label: 'Segment Builder', icon: <Layers size={18} /> },
+      { phase: 'templates', label: 'Template Library', icon: <BookTemplate size={18} /> },
+      { phase: 'playbooks', label: 'Playbook Automation', icon: <Rocket size={18} /> },
+    ],
+  },
+  {
+    label: 'Insights',
+    items: [
+      { phase: 'analysis', label: 'Analysis', icon: <BarChart3 size={18} /> },
+      { phase: 'campaign-stats', label: 'Campaign Stats', icon: <TrendingUp size={18} /> },
+    ],
+  },
 ];
 
 interface SidebarNavigationProps {
@@ -28,54 +45,38 @@ export function SidebarNavigation({ activePhase, onPhaseChange }: SidebarNavigat
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4">
-        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 mb-3">
-          LiveOps Segments
-        </div>
-        {NAV_ITEMS.map(({ phase, label, icon, step }) => {
-          const isActive = activePhase === phase;
-          return (
-            <button
-              key={phase}
-              onClick={() => onPhaseChange(phase)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-violet-600/20 text-violet-300 font-medium'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-              }`}
-            >
-              <span className={isActive ? 'text-violet-400' : 'text-slate-500'}>{icon}</span>
-              <span className="flex-1 text-left">{label}</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
-                  isActive ? 'bg-violet-600/30 text-violet-300' : 'bg-slate-800 text-slate-500'
-                }`}
-              >
-                {step}
-              </span>
-              {isActive && <ChevronRight size={14} className="text-violet-400" />}
-            </button>
-          );
-        })}
+      {/* Navigation groups */}
+      <nav className="flex-1 px-3 py-4 space-y-5">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 mb-2">
+              {group.label}
+            </div>
+            {group.items.map(({ phase, label, icon }) => {
+              const isActive = activePhase === phase;
+              return (
+                <button
+                  key={phase}
+                  onClick={() => onPhaseChange(phase)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg mb-0.5 text-sm transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-violet-600/20 text-violet-300 font-medium'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                  }`}
+                >
+                  <span className={isActive ? 'text-violet-400' : 'text-slate-500'}>{icon}</span>
+                  <span className="flex-1 text-left">{label}</span>
+                  {isActive && <ChevronRight size={14} className="text-violet-400" />}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
-      {/* Phase indicator */}
+      {/* Footer */}
       <div className="px-5 py-4 border-t border-slate-700/50">
-        <div className="flex gap-1.5">
-          {NAV_ITEMS.map(({ phase, step }) => (
-            <div
-              key={phase}
-              className={`h-1.5 flex-1 rounded-full transition-colors ${
-                activePhase === phase ? 'bg-violet-500' : 'bg-slate-700'
-              }`}
-              title={`Phase ${step}`}
-            />
-          ))}
-        </div>
-        <div className="text-[11px] text-slate-500 mt-2">
-          Phase {NAV_ITEMS.find((n) => n.phase === activePhase)?.step} of 3
-        </div>
+        <div className="text-[11px] text-slate-500">VNGGames Grow Platform v1.0</div>
       </div>
     </aside>
   );

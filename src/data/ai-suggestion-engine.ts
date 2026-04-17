@@ -2,7 +2,7 @@
  * Mock AI engine that parses natural language prompts into segment conditions.
  * Uses keyword/pattern matching to simulate LLM-generated conditions.
  */
-import type { ConditionGroup, Condition, LogicOperator } from '../types/segment-builder-types';
+import type { Condition, LogicOperator } from '../types/segment-builder-types';
 
 let idCounter = 500;
 function nextId(prefix: string) { return `${prefix}-${Date.now()}-${++idCounter}`; }

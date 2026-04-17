@@ -4,6 +4,8 @@ import { SidebarNavigation } from './components/layout/sidebar-navigation';
 import { SegmentPhaseContainer } from './components/segment-builder/segment-phase-container';
 import { TemplateLibrary } from './components/template-library/template-library';
 import { PlaybookAutomation } from './components/playbook-automation/playbook-automation';
+import { AnalysisTab } from './components/analysis/analysis-tab';
+import { CampaignStatsTab } from './components/campaign-stats/campaign-stats-tab';
 
 /** State passed when cloning from a template or playbook into builder */
 interface BuilderPreload {
@@ -37,6 +39,17 @@ export default function App() {
     setActivePhase('builder');
   }, []);
 
+  /** Analysis → Phase 1: pre-fill builder with a named segment from an analysis result */
+  const handleAnalysisSegmentInput = useCallback((label: string) => {
+    setBuilderPreload({
+      groups: [],
+      groupLogic: 'AND',
+      name: `Analysis: ${label}`,
+      returnTo: 'analysis',
+    });
+    setActivePhase('builder');
+  }, []);
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       <SidebarNavigation activePhase={activePhase} onPhaseChange={setActivePhase} />
@@ -66,6 +79,14 @@ export default function App() {
             onCustomizeSegment={handleCustomizeSegment}
             onTuneSegment={handleTuneSegment}
           />
+        )}
+
+        {activePhase === 'analysis' && (
+          <AnalysisTab onUseAsSegmentInput={handleAnalysisSegmentInput} />
+        )}
+
+        {activePhase === 'campaign-stats' && (
+          <CampaignStatsTab />
         )}
       </main>
     </div>
