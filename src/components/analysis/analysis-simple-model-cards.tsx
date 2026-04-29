@@ -23,6 +23,8 @@ export interface ModelCardProps {
 
 /* ── Events card ────────────────────────────────────────────────────── */
 
+const CHART_H = 88; // px budget for bar heights (container is h-28=112px, ~24px reserved for labels)
+
 export function EventsCard({ onUseAsSegment }: ModelCardProps) {
   const [config, setConfig]   = useState<EventsConfig>(DEFAULT_EVENTS_CONFIG);
   const [groupBy, setGroupBy] = useState<'all' | 'platform'>('all');
@@ -59,22 +61,21 @@ export function EventsCard({ onUseAsSegment }: ModelCardProps) {
         </div>
       </div>
 
+      {/* Bar chart — use pixel heights so bars render correctly inside flex */}
       <div className="flex items-end gap-1.5 h-28">
         {EVENTS_DAU_DATA.map((d) => {
           const total = d.ios + d.android;
-          const hPct  = (total / maxVal) * 100;
+          const barH  = Math.max(4, Math.round((total / maxVal) * CHART_H));
           return (
             <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
-              <div className="w-full flex flex-col justify-end" style={{ height: `${hPct}%` }}>
-                {groupBy === 'platform' ? (
-                  <>
-                    <div className="bg-blue-400 rounded-t"    style={{ height: `${(d.ios / total) * 100}%`, minHeight: 2 }} />
-                    <div className="bg-emerald-400 rounded-b" style={{ height: `${(d.android / total) * 100}%`, minHeight: 2 }} />
-                  </>
-                ) : (
-                  <div className="bg-violet-400 rounded w-full h-full" />
-                )}
-              </div>
+              {groupBy === 'platform' ? (
+                <div className="w-full flex flex-col overflow-hidden rounded" style={{ height: barH }}>
+                  <div className="bg-blue-400 w-full"    style={{ height: `${(d.ios     / total) * 100}%` }} />
+                  <div className="bg-emerald-400 w-full" style={{ height: `${(d.android / total) * 100}%` }} />
+                </div>
+              ) : (
+                <div className="w-full bg-violet-400 rounded" style={{ height: barH }} />
+              )}
               <span className="text-[9px] text-slate-400">{d.day}</span>
             </div>
           );

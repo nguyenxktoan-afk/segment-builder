@@ -57,7 +57,7 @@ export function AnalysisTab({ onUseAsSegmentInput }: AnalysisTabProps) {
       </div>
 
       {/* Model card grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
         {ANALYSIS_CARDS.map(({ id, title, icon, Component, configType }) => {
           const isExpanded  = expandedId === id;
           const isComplex   = configType === 'drawer';
